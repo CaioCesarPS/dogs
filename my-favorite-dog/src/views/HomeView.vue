@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { baseUrl } from '@/utils/baseUrl'
 
 interface BreedGroup {
   breed: string
@@ -42,7 +43,7 @@ const fetchDogsFromAPI = async () => {
     error.value = null
 
     // Buscar todas as raças disponíveis
-    const breedsResponse = await fetch('http://localhost:3000/api/breeds')
+    const breedsResponse = await fetch(`${baseUrl}/api/breeds`)
     // console.log('breedsResponse:', await breedsResponse.json())
     if (!breedsResponse.ok) {
       throw new Error('Falha ao buscar raças')
@@ -55,7 +56,7 @@ const fetchDogsFromAPI = async () => {
     // Buscar imagens de todas as raças em paralelo para melhor performance
     const breedPromises = selectedBreeds.map(async (breed) => {
       try {
-        const imagesResponse = await fetch(`http://localhost:3000/api/breeds/${breed}/images/1`)
+        const imagesResponse = await fetch(`${baseUrl}/api/breeds/${breed}/images/1`)
         if (imagesResponse.ok) {
           const images: string[] = await imagesResponse.json()
 
@@ -96,7 +97,7 @@ const searchDogsByBreed = async (breed: string) => {
     setIsSearching(true)
 
     const imagesResponse = await fetch(
-      `http://localhost:3000/api/breeds/${breed.toLowerCase()}/images/1`,
+      `${baseUrl}/api/breeds/${breed.toLowerCase()}/images/1`,
     )
     if (!imagesResponse.ok) {
       throw new Error(`Raça "${breed}" não encontrada`)
@@ -140,7 +141,7 @@ const displayedBreedGroups = computed(() => {
 const fetchBreedImagesForModal = async (breed: string) => {
   try {
     const imagesResponse = await fetch(
-      `http://localhost:3000/api/breeds/${breed.toLowerCase()}/images/3`,
+      `${baseUrl}/api/breeds/${breed.toLowerCase()}/images/3`,
     )
     if (imagesResponse.ok) {
       const images: string[] = await imagesResponse.json()
