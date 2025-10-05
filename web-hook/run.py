@@ -18,6 +18,8 @@ async def docker_compose_up():
     try:
         # Use the mounted parent directory where the main docker-compose.yml is located
         parent_dir = "/app/parent"
+        
+        subprocess.run(["docker", "compose", "down"], cwd=parent_dir)
 
         # Execute the docker compose command
         result = subprocess.run(
