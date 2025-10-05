@@ -3,6 +3,7 @@ FROM node:22-alpine
 WORKDIR /app
 
 COPY package*.json ./
+COPY . .
 RUN npm install --production
 RUN npm install @nestjs/cli -g
 RUN npm run build
