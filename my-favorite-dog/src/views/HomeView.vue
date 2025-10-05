@@ -209,7 +209,7 @@ onMounted(async () => {
             ? 'Resultados da Pesquisa'
             : showFavoritesOnly
               ? 'Apenas os Favoritos'
-              : 'Todas as Raças'
+              : 'Todas as Raçasaaaaaaa'
         }}
       </h1>
       <p v-if="searchQuery.length > 0" class="text-sm text-gray-600 mt-1">
