@@ -209,7 +209,7 @@ onMounted(async () => {
             ? 'Resultados da Pesquisa'
             : showFavoritesOnly
               ? 'Apenas os Favoritos'
-              : 'Todas as Raças'
+              : 'Todas as Raçasaaaaa'
         }}
       </h1>
       <p v-if="searchQuery.length > 0" class="text-sm text-gray-600 mt-1">
@@ -266,7 +266,7 @@ onMounted(async () => {
           <DialogTitle v-if="selectedBreed" class="text-2xl font-bold">
             {{ selectedBreed.breed }}
           </DialogTitle>
-          <DialogDescription> Todas as imagens disponíveis desta raçaaaaaaaa </DialogDescription>
+          <DialogDescription> Todas as imagens disponíveis desta raça </DialogDescription>
         </DialogHeader>
 
         <div v-if="selectedBreed" class="flex flex-col gap-6 mt-4">
