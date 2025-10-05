@@ -266,7 +266,7 @@ onMounted(async () => {
           <DialogTitle v-if="selectedBreed" class="text-2xl font-bold">
             {{ selectedBreed.breed }}
           </DialogTitle>
-          <DialogDescription> Todas as imagens disponíveis desta raça </DialogDescription>
+          <DialogDescription> Todas as imagens disponíveis desta raçaaaaaaaa </DialogDescription>
         </DialogHeader>
 
         <div v-if="selectedBreed" class="flex flex-col gap-6 mt-4">
