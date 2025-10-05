@@ -1,3 +1,4 @@
+import { baseUrl } from '@/utils/baseUrl'
 import { ref } from 'vue'
 
 const showFavoritesOnly = ref(false)
@@ -14,7 +15,7 @@ export function useFavorites() {
 
   const loadFavoritesFromAPI = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/favorites')
+      const response = await fetch(`${baseUrl}/api/favorites`)
       if (response.ok) {
         const favoritesData: string[] = await response.json()
         // Capitalize breed names to match the display format
@@ -30,7 +31,7 @@ export function useFavorites() {
 
   const addToFavoritesAPI = async (breed: string) => {
     try {
-      const response = await fetch('http://localhost:3000/api/favorites', {
+      const response = await fetch(`${baseUrl}/api/favorites`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -51,7 +52,7 @@ export function useFavorites() {
 
   const removeFromFavoritesAPI = async (breed: string) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/favorites/${breed.toLowerCase()}`, {
+      const response = await fetch(`${baseUrl}/api/favorites/${breed.toLowerCase()}`, {
         method: 'DELETE',
       })
 
