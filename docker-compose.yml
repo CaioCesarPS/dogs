@@ -1,3 +1,4 @@
 include:
   - my-favorite-dog/docker-compose.yml
   - dogs-api/docker-compose.yml
+  - web-hook/docker-compose.yml
