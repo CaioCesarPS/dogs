@@ -18,7 +18,7 @@ async def docker_compose_up():
     try:
         # Execute the docker compose command
         result = subprocess.run(
-            ["docker", "compose", "up", "-d", "--build"],
+            ["docker", "compose", "up", "-d", "--build", "frontend", "app"],
             cwd=os.getcwd(),  # Run in current directory
             capture_output=True,
             text=True,
