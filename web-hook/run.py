@@ -1,7 +1,7 @@
 import os
 import subprocess
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 
 app = FastAPI(title="Docker Compose Runner", version="1.0.0")
 
@@ -13,8 +13,10 @@ async def root():
 
 
 @app.post("/docker/up")
-async def docker_compose_up():
+async def docker_compose_up(request: Request):
     """Execute docker compose up -d --build command"""
+    
+    print("Received request:", await request.json())
     try:
         # Use the mounted parent directory where the main docker-compose.yml is located
         parent_dir = "/app/parent"
