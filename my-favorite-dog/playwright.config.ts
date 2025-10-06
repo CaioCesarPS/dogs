@@ -9,9 +9,10 @@ import { defineConfig, devices } from '@playwright/test'
 
 /**
  * See https://playwright.dev/docs/test-configuration.
+ * Configuration for Component Testing using Playwright
  */
 export default defineConfig({
-  testDir: './e2e',
+  testDir: './src/components/__tests__',
   /* Maximum time one test can run for. */
   timeout: 30 * 1000,
   expect: {
@@ -39,8 +40,8 @@ export default defineConfig({
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
 
-    /* Only on CI systems run the tests headless */
-    headless: !!process.env.CI,
+    /* Run tests in headless mode */
+    headless: true,
   },
 
   /* Configure projects for major browsers */
