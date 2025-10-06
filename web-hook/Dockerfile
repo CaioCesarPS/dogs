@@ -15,6 +15,10 @@ RUN curl -fsSL https://get.docker.com -o get-docker.sh && \
     sh get-docker.sh && \
     rm get-docker.sh
 
+# Configure Git to trust the mounted directory
+RUN git config --global --add safe.directory /app/parent && \
+    git config --global --add safe.directory '*'
+
 # Copy requirements first for better caching
 COPY requirements.txt .
 

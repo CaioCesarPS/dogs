@@ -37,6 +37,22 @@ async def docker_compose_up(request: Request):
             text=True,
         )
         
+        # If git pull fails due to safe.directory, try to fix it and retry
+        if git_result.returncode != 0 and "safe.directory" in git_result.stderr:
+            print("Git safe.directory issue detected, configuring and retrying...")
+            subprocess.run(
+                ["git", "config", "--global", "--add", "safe.directory", parent_dir],
+                capture_output=True,
+                text=True,
+            )
+            # Retry git pull
+            git_result = subprocess.run(
+                ["git", "pull"],
+                cwd=parent_dir,
+                capture_output=True,
+                text=True,
+            )
+        
         if git_result.returncode == 0:
             print(f"Git pull executed successfully: {git_result.stdout}")
         else:
