@@ -15,25 +15,30 @@ async def root():
 @app.post("/docker/up")
 async def docker_compose_up(request: Request):
     """Execute docker compose up -d --build command"""
-    
-    print("Received request:", await request.json())
+
     try:
         # Use the mounted parent directory where the main docker-compose.yml is located
         parent_dir = "/app/parent"
-        
+
         # First, stop and remove existing containers to avoid name conflicts
         subprocess.run(
-            ["docker", "compose", "down", "--remove-orphans"], 
+            ["docker", "compose", "down", "--remove-orphans"],
             cwd=parent_dir,
             capture_output=True,
-            text=True
+            text=True,
         )
-        
+
+        # Execute git pull after docker compose down
+        subprocess.run(
+            ["git", "pull"],
+            cwd=parent_dir,
+            capture_output=True,
+            text=True,
+        )
+
         # Also force remove containers by name in case they weren't managed by compose
         subprocess.run(
-            ["docker", "rm", "-f", "frontend", "app"], 
-            capture_output=True,
-            text=True
+            ["docker", "rm", "-f", "frontend", "app"], capture_output=True, text=True
         )
 
         # Execute the docker compose command
@@ -85,7 +90,7 @@ async def docker_compose_down():
     """Execute docker compose down to stop and remove containers"""
     try:
         parent_dir = "/app/parent"
-        
+
         # Stop and remove containers
         result = subprocess.run(
             ["docker", "compose", "down", "--remove-orphans"],
@@ -94,12 +99,10 @@ async def docker_compose_down():
             text=True,
             timeout=60,
         )
-        
+
         # Also force remove containers by name
         subprocess.run(
-            ["docker", "rm", "-f", "frontend", "app"], 
-            capture_output=True,
-            text=True
+            ["docker", "rm", "-f", "frontend", "app"], capture_output=True, text=True
         )
 
         return {
@@ -131,7 +134,17 @@ async def docker_status():
     try:
         # Check if containers exist
         result = subprocess.run(
-            ["docker", "ps", "-a", "--filter", "name=frontend", "--filter", "name=app", "--format", "table {{.Names}}\t{{.Status}}\t{{.Ports}}"],
+            [
+                "docker",
+                "ps",
+                "-a",
+                "--filter",
+                "name=frontend",
+                "--filter",
+                "name=app",
+                "--format",
+                "table {{.Names}}\t{{.Status}}\t{{.Ports}}",
+            ],
             capture_output=True,
             text=True,
             timeout=30,
