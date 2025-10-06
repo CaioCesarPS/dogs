@@ -8,6 +8,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     curl \
     git \
+    openssh-client \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Docker CLI (needed for the docker compose commands in the FastAPI app)
@@ -15,9 +16,12 @@ RUN curl -fsSL https://get.docker.com -o get-docker.sh && \
     sh get-docker.sh && \
     rm get-docker.sh
 
-# Configure Git to trust the mounted directory
+# Configure Git to trust the mounted directory and SSH settings
 RUN git config --global --add safe.directory /app/parent && \
-    git config --global --add safe.directory '*'
+    git config --global --add safe.directory '*' && \
+    git config --global core.sshCommand "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" && \
+    mkdir -p /home/.ssh && \
+    chmod 700 /home/.ssh
 
 # Copy requirements first for better caching
 COPY requirements.txt .
