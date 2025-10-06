@@ -6,7 +6,7 @@
 # How to run
 
 - Clone the repository
-- Run `docker-compose up -d --build`
+- Run `docker-compose up -d --build app frontend`
 - Open your browser and go to `http://localhost:5173`
 
 # Optional Enchanchements
