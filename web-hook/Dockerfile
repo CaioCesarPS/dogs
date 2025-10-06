@@ -20,8 +20,8 @@ RUN curl -fsSL https://get.docker.com -o get-docker.sh && \
 RUN git config --global --add safe.directory /app/parent && \
     git config --global --add safe.directory '*' && \
     git config --global core.sshCommand "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" && \
-    mkdir -p /home/.ssh && \
-    chmod 700 /home/.ssh
+    mkdir -p /home/caio/.ssh && \
+    chmod 700 /home/caio/.ssh
 
 # Copy requirements first for better caching
 COPY requirements.txt .
