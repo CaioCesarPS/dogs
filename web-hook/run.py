@@ -37,21 +37,78 @@ async def docker_compose_up(request: Request):
             text=True,
         )
         
-        # If git pull fails due to safe.directory, try to fix it and retry
-        if git_result.returncode != 0 and "safe.directory" in git_result.stderr:
-            print("Git safe.directory issue detected, configuring and retrying...")
-            subprocess.run(
-                ["git", "config", "--global", "--add", "safe.directory", parent_dir],
-                capture_output=True,
-                text=True,
-            )
-            # Retry git pull
-            git_result = subprocess.run(
-                ["git", "pull"],
-                cwd=parent_dir,
-                capture_output=True,
-                text=True,
-            )
+        # If git pull fails, try to fix common issues and retry
+        if git_result.returncode != 0:
+            error_message = git_result.stderr.lower()
+            
+            # Handle safe.directory issue
+            if "safe.directory" in error_message:
+                print("Git safe.directory issue detected, configuring and retrying...")
+                subprocess.run(
+                    ["git", "config", "--global", "--add", "safe.directory", parent_dir],
+                    capture_output=True,
+                    text=True,
+                )
+                # Retry git pull
+                git_result = subprocess.run(
+                    ["git", "pull"],
+                    cwd=parent_dir,
+                    capture_output=True,
+                    text=True,
+                )
+            
+            # Handle SSH host key verification issue
+            elif "host key verification failed" in error_message:
+                print("SSH host key verification failed, configuring Git to use HTTPS...")
+                
+                # Try to get the current remote URL
+                remote_result = subprocess.run(
+                    ["git", "remote", "get-url", "origin"],
+                    cwd=parent_dir,
+                    capture_output=True,
+                    text=True,
+                )
+                
+                if remote_result.returncode == 0:
+                    current_url = remote_result.stdout.strip()
+                    print(f"Current remote URL: {current_url}")
+                    
+                    # Convert SSH URL to HTTPS if needed
+                    if current_url.startswith("git@github.com:"):
+                        https_url = current_url.replace("git@github.com:", "https://github.com/")
+                        print(f"Converting to HTTPS URL: {https_url}")
+                        
+                        # Set the remote URL to HTTPS
+                        subprocess.run(
+                            ["git", "remote", "set-url", "origin", https_url],
+                            cwd=parent_dir,
+                            capture_output=True,
+                            text=True,
+                        )
+                        
+                        # Retry git pull with HTTPS
+                        git_result = subprocess.run(
+                            ["git", "pull"],
+                            cwd=parent_dir,
+                            capture_output=True,
+                            text=True,
+                        )
+                    else:
+                        # If it's not a GitHub SSH URL, try to configure SSH to skip host key verification
+                        print("Configuring SSH to skip host key verification...")
+                        subprocess.run(
+                            ["git", "config", "--global", "core.sshCommand", "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"],
+                            capture_output=True,
+                            text=True,
+                        )
+                        
+                        # Retry git pull
+                        git_result = subprocess.run(
+                            ["git", "pull"],
+                            cwd=parent_dir,
+                            capture_output=True,
+                            text=True,
+                        )
         
         if git_result.returncode == 0:
             print(f"Git pull executed successfully: {git_result.stdout}")
