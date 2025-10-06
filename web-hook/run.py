@@ -29,12 +29,19 @@ async def docker_compose_up(request: Request):
         )
 
         # Execute git pull after docker compose down
-        subprocess.run(
+        print("Executing git pull...")
+        git_result = subprocess.run(
             ["git", "pull"],
             cwd=parent_dir,
             capture_output=True,
             text=True,
         )
+        
+        if git_result.returncode == 0:
+            print(f"Git pull executed successfully: {git_result.stdout}")
+        else:
+            print(f"Git pull failed (return code {git_result.returncode}): {git_result.stderr}")
+            # Continue with docker compose even if git pull fails
 
         # Also force remove containers by name in case they weren't managed by compose
         subprocess.run(

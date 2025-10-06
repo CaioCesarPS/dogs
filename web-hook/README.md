@@ -5,7 +5,9 @@ Uma API FastAPI que permite executar comandos Docker Compose remotamente via HTT
 ## Funcionalidades
 
 - API REST para executar `docker compose up -d --build`
+- Execução automática de `git pull` antes do deploy
 - Endpoint de health check
+- Status dos containers Docker
 - Interface web automática via FastAPI (Swagger UI)
 
 ## Estrutura
@@ -48,13 +50,33 @@ Verifica se a API está funcionando.
 
 #### POST /docker/up
 
-Executa o comando `docker compose up -d --build frontend app`.
+Executa o processo completo de atualização e deploy:
+
+1. Para os containers existentes (`docker compose down`)
+2. Executa `git pull` para atualizar o código
+3. Executa `docker compose up -d --build frontend app` para rebuildar e iniciar os containers
+
+#### POST /docker/down
+
+Para e remove todos os containers.
+
+#### GET /docker/status
+
+Verifica o status dos containers Docker.
 
 #### GET /health
 
 Health check da aplicação.
 
-### 4. Executar localmente (sem Docker)
+### 4. Script de teste
+
+Um script de teste está disponível para testar a funcionalidade:
+
+```bash
+./test-webhook.sh
+```
+
+### 5. Executar localmente (sem Docker)
 
 ```bash
 # Instalar dependências
@@ -70,6 +92,12 @@ python run.py
 - Inclui um proxy de socket Docker para maior segurança
 - Usuário não-root dentro do container
 - Health checks configurados
+
+## Pré-requisitos
+
+- O diretório pai deve ser um repositório Git válido
+- O repositório deve ter acesso de leitura/escrita (sem `ro` no volume mount)
+- Git deve estar instalado no container (incluído no Dockerfile)
 
 ## Variáveis de Ambiente
 
