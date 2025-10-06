@@ -6,6 +6,40 @@ from fastapi import FastAPI, HTTPException, Request
 app = FastAPI(title="Docker Compose Runner", version="1.0.0")
 
 
+def setup_git_auth():
+    """Setup Git authentication using environment variables"""
+    git_username = os.getenv('GIT_USERNAME')
+    git_token = os.getenv('GIT_TOKEN')
+    git_email = os.getenv('GIT_EMAIL')
+    
+    if git_username and git_token:
+        print(f"Setting up Git authentication for user: {git_username}")
+        
+        # Configure Git credentials
+        subprocess.run(
+            ["git", "config", "--global", "user.name", git_username],
+            capture_output=True, text=True
+        )
+        
+        if git_email:
+            subprocess.run(
+                ["git", "config", "--global", "user.email", git_email],
+                capture_output=True, text=True
+            )
+        
+        return git_username, git_token
+    
+    return None, None
+
+
+def get_authenticated_url(url, username, token):
+    """Convert a GitHub HTTPS URL to include authentication"""
+    if username and token and url.startswith("https://github.com/"):
+        # Format: https://username:token@github.com/owner/repo.git
+        return url.replace("https://github.com/", f"https://{username}:{token}@github.com/")
+    return url
+
+
 @app.get("/")
 async def root():
     """Root endpoint to check if the API is running"""
@@ -30,6 +64,10 @@ async def docker_compose_up(request: Request):
 
         # Execute git pull after docker compose down
         print("Executing git pull...")
+        
+        # Setup Git authentication if credentials are provided
+        git_username, git_token = setup_git_auth()
+        
         git_result = subprocess.run(
             ["git", "pull"],
             cwd=parent_dir,
@@ -57,9 +95,12 @@ async def docker_compose_up(request: Request):
                     text=True,
                 )
             
-            # Handle SSH host key verification issue
-            elif "host key verification failed" in error_message:
-                print("SSH host key verification failed, configuring Git to use HTTPS...")
+            # Handle SSH host key verification issue or permission denied
+            elif "host key verification failed" in error_message or "permission denied (publickey)" in error_message:
+                if "permission denied (publickey)" in error_message:
+                    print("SSH permission denied, converting Git to use HTTPS...")
+                else:
+                    print("SSH host key verification failed, configuring Git to use HTTPS...")
                 
                 # Try to get the current remote URL
                 remote_result = subprocess.run(
@@ -76,7 +117,14 @@ async def docker_compose_up(request: Request):
                     # Convert SSH URL to HTTPS if needed
                     if current_url.startswith("git@github.com:"):
                         https_url = current_url.replace("git@github.com:", "https://github.com/")
-                        print(f"Converting to HTTPS URL: {https_url}")
+                        
+                        # Add authentication if credentials are available
+                        if git_username and git_token:
+                            https_url = get_authenticated_url(https_url, git_username, git_token)
+                            print(f"Converting to authenticated HTTPS URL: https://github.com/{current_url.split(':')[1]}")
+                        else:
+                            print(f"Converting to HTTPS URL: {https_url}")
+                            print("⚠️  No Git credentials provided - this will only work for public repositories")
                         
                         # Set the remote URL to HTTPS
                         subprocess.run(
@@ -113,7 +161,21 @@ async def docker_compose_up(request: Request):
         if git_result.returncode == 0:
             print(f"Git pull executed successfully: {git_result.stdout}")
         else:
+            error_msg = git_result.stderr.lower()
             print(f"Git pull failed (return code {git_result.returncode}): {git_result.stderr}")
+            
+            # Provide helpful error messages
+            if "authentication failed" in error_msg or "could not read username" in error_msg:
+                print("💡 Authentication failed. For private repositories:")
+                print("   1. Set GIT_USERNAME and GIT_TOKEN environment variables")
+                print("   2. Generate a Personal Access Token at: https://github.com/settings/tokens")
+                print("   3. Make sure the token has 'repo' permissions")
+            elif "repository not found" in error_msg or "not found" in error_msg:
+                print("💡 Repository not found. Check if:")
+                print("   1. The repository URL is correct")
+                print("   2. You have access to the repository")
+                print("   3. The repository is not private (or provide credentials)")
+            
             # Continue with docker compose even if git pull fails
 
         # Also force remove containers by name in case they weren't managed by compose

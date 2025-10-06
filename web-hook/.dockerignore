@@ -54,3 +54,5 @@ docs/
 .env.development
 .env.test
 test-webhook.sh
+rebuild-webhook.sh
+.env
