@@ -6,6 +6,7 @@
 # How to run
 
 - Clone the repository
+- Create a .env file in the root folder
 - Run `docker-compose up -d --build app frontend`
 - Open your browser and go to `http://localhost:5173`
 
